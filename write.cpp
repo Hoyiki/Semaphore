@@ -100,6 +100,9 @@ int main(int argc, const char * argv[]) {
     sem_wait(sem_mutex);
     info[1] ++;
     ticket = info[1];
+    if (ticket==1 and info[2]==0){ //might be the case that writer comes first, need to manually raise the current ticket
+        info[2]++;
+    }
     if (info[3]==0){
         info[3] = 1;
     }
@@ -115,7 +118,7 @@ int main(int argc, const char * argv[]) {
     
     char letters[] = "abcdefghijklmnopqrstuvwxyz";
     for (int i = lb; i <= ub; i++){
-        record[i] = letters[rand() % 26];
+        record[i] = letters[ticket % 26];
     }
     
     cout << "sleeping for " << time << " seconds" << endl;

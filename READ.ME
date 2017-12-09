@@ -1,0 +1,21 @@
+To run the program, first run manager. To read, run 'read -r lb ub -d time'. To write, run 'write -r lb ub -d time'. 
+lb and ub are in the range of 0 to 26. (I passed the shmid implicitly inside the program, so it is not needed in command line.)
+
+I use two semaphores and a system of tickets to have the starvation-free mechanics.
+There are two named semaphores, mutex and wrt. And two shared memory segments, record and info. Record is the place where writer writes and reader reads. It contains 27 characters. And info contains tickets informations as below:
+
+	info[0]: readCount, the number of readers that are currently reading from the record
+	info[1]: lastTicket, the last one ticket given to the new comer
+	info[2]: currentTicket, the ticket number that currently the ticket holders of this number or smaller than this number can enter their critical section (it is one of the condition that needs to be satisfied, the semaphore wrt also holds them from entering the critical section)
+	info[3]: lastType, if last ticket was given to a reader, it is 0, otherwise, it is 1
+
+Here is an example of how the tickets are given:
+
+	0 1 2 2 2 3 4 5 5
+	r w r r r w w r r 
+
+Last ticket is initialized with 0. If the readers appear consecutively, they will get the same ticket. Whenver a writer appears, the writer gets (lastTicket + 1). If a reader appears after a writer, the reader gets (lastTicket + 1).
+
+Current ticket is also initialized with 0. Whenever a reader finishes reading, the readCount is zero and its ticket is the same as current ticket, current ticket will plus 1. Whenver a writer finishes writing, current ticket plus 1.
+
+With the ticket system, readers that come after the writer cannot start reading until the writer finishes writing. Starvation is prevented. 
